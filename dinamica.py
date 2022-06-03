@@ -1,63 +1,54 @@
-from asyncio.windows_events import INFINITE
-from unicodedata import numeric
-
-letra = 0
-
-def parentesis(i, j, n, bracket):
-  if i == j:
-    globals()['letra'] = letra + 1
-    # print(chr(letra), end="")
-    salida.write(chr(letra))
-    return;
-  # print("(", end="")
-  salida.write("(")
-
-  parentesis(i, bracket[i][j], n, bracket)
-  parentesis(bracket[i][j] + 1, j, n, bracket)
-
-  # print(")", end="")
-  salida.write(")")
-
-def ordenarMatrices(arr, n):
-  m = [[0 for x in range(n)] for x in range(n)]
-  bracket = [[0 for x in range(n)] for x in range(n)]
-
-  for i in range(1, n):
-    m[i][i] = 0
-
-  for L in range(2, n):
-    for i in range(1, n-L+1):
-      j = i + L - 1
-      m[i][j] = INFINITE
-      for k in range(i, j):
-        q  = m[i][k] + m[k + 1][j] + arr[i - 1] * arr[k] * arr[j]
-        if q < m[i][j]:
-          m[i][j] = q
-          bracket[i][j] = k
-
-  globals()['letra'] = 64
-  # print("Mejor secuencia : ", end="")
-  parentesis(1, n-1, n, bracket)
-  # print("\nCosto : ")
-  # print("\n" + str(m[1][n - 1]))
-  salida.write("\n" + str(m[1][n - 1]))
+def mult(i, j):
+    if(i == j):
+        return 0
+    else:
+        res = arr[i] * arr[j] * arr[j+1]
+        return res
 
 archivo = open("ejemploEntradaP4.txt", "r")
 salida = open("salida.txt", "w")
-
 arr = []
-arr2 = []
+flag2 = 0
 
 for line in archivo:
+  flag = 0
   for number in line.split():
-    if not number in arr2 and not number.isalpha():
-      arr2.append(number)
+    flag += 1
+    flag2 += 1
+    if flag2 == 2:
+      arr.append(int(number))
+    if flag == 3 and not number.isalpha():
+      arr.append(int(number))
 
-for i in arr2:
-  arr.append(int(i))
+size = len(arr) - 1
+v = [[0 for x in range(size)] for x in range(2, size)]
+v2 = [['0' for x in range(size)] for x in range(2, size)]
 
-n = len(arr)
-globals()['letra'] = 30
+for l in range(size):
+  for k in range(size - l):
+    j = k + 1 + l
+    if(l == 0):
+      res1 = mult(k, j-1)
+      res2 = mult(j, k)
+    else:
+      res1 = mult(k, j-1) + v[(l+2) % 2][k]
+      res2 = mult(j, k) + v[(l+2) % 2][k+1]
+    if(res1 <= res2):
+      v[(l+2-1) % 2][k] = res1
+      result = v[(l+2-1) % 2][k]
+      buffer = "(" + v2[(l+2) % 2][k] + ")" + chr(64 + j)
+      v2[(l+2-1) % 2][k] = buffer
+    else:
+      v[(l+2-1) % 2][k] = res2
+      result = v[(l+2-1) % 2][k]
+      buffer = chr(65) + "(" + v2[(l+2) % 2][k+1] +")"
+      v2[(l+2-1) % 2][k] = buffer
 
-ordenarMatrices(arr, n)
+letra = 65
 
+for i in range(size + 1):
+  buffer = buffer.replace("((0)" + chr(letra) + ")", chr(letra))
+  letra += 1
+
+salida.write(buffer + "\n")
+salida.write(str(result))
